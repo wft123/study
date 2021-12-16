@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- saved from url=(0086)http://ui-dev.nhnent.com/svnview/hivelab/connect_hrlove/trunk/10_face_recognition.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Neon/Harmony 배포목록</title>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+<style>
+/*textarea {height: 600px; width: 400px}*/
+/*button {height: 50px; width: 80px; vertical-align: center;}*/
+div {width: 100%; text-align: center; margin: 5px; display: flex;}
+textarea {height: 300px; width: 49%; resize: none; margin: 0 auto;}
+table {height: 100%; min-height: 50px; width: 49%; border: 1px solid black; margin: 0 auto; font-size: 12px; text-align: start;}
+tr {height: 25px;}
+button {height: 40px; width: 80px; margin: 0 auto; padding:6px 10px 7px;border:1px solid #6FEFF3FF;border-radius:2px;background-color: #13BAFDFF;color:white;}
+.not-match {background-color: rgb(241, 128, 128);}
+</style>
+</head>
+<body>
+
+<div>
+    <textarea id="src-task" placeholder="Task"></textarea>
+    <textarea id="src-pr" placeholder="PR"></textarea>
+</div>
+<div>
+    <button id="convert"> Convert </button>
+</div>
+<div>
+    <table id="res-task"></table>
+    <table id="res-pr"></table>
+</div>
+
+<script>
+const SYSTEM = {
+    NEON : 0,
+    HARMONY : 1
+};
+const loopLine = (src, callback) => $(src).val().split("\n").forEach(callback);
+const cleaning = (value) => value.replace(":", "").replace("#", "").replace("l ", "").trim();
+const printResult = (list, target) => {
+    $(target).empty();
+    new Map([...list.entries()].sort()).forEach(v => $(target).append("<tr><td>"+ v +"</td></tr>") );
+}
+
+const convert = system => {
+    let taskMap = new Map();
+    let prMap = new Map();
+
+    switch (system) {
+        case SYSTEM.NEON:
+            loopLine("#src-task", (value) => {
+                value = value.split("\t")[1];
+                taskMap.set(value?.split(" ")[2].trim(), value?.split("l")[1].trim());
+            });
+            loopLine("#src-pr", (value) => {
+                if(value.startsWith("[")) prMap.set(value?.split(" ")[0].trim(), cleaning(value));
+            });
+            break;
+        case SYSTEM.HARMONY:
+            loopLine("#src-task", (value) => {
+                value = value.split("\t")[0]
+                taskMap.set(cleaning(value?.split(" ")[0]), cleaning(value));
+            });
+            loopLine("#src-pr", (value) => {
+                if(value.startsWith("#harmony")) prMap.set(cleaning(value?.split(" ")[0]), cleaning(value));
+            });
+            break;
+    }
+    
+    taskMap.forEach((v, k) => {if(!prMap.has(k)) prMap.set(k, " ");});
+    prMap.forEach((v, k) => {if(!taskMap.has(k)) taskMap.set(k, " ");});
+
+    printResult(taskMap, "#res-task");
+    printResult(prMap, "#res-pr");
+        
+    for(let i = 0 ; i < $("#res-task").children().length ; i++) {
+        let t = $("#res-task").children().eq(i); 
+        let p = $("#res-pr").children().eq(i);
+        if(t[0].innerText.length==0 || p[0].innerText.length==0){
+            t.addClass("not-match"); p.addClass("not-match");
+        }
+    }
+}
+
+$("#convert").on("click", () => convert($("#src-task").val().indexOf("harmony") > -1 ? SYSTEM.HARMONY : SYSTEM.NEON));
+$("table").on("dblclick", () => {
+    window.getSelection().selectAllChildren(document.getElementById('res-task'));
+    document.execCommand('Copy');
+    alert("Task 복사 완료!");
+});
+
+document.querySelector('textarea').addEventListener('keyup', (e)=>{
+    if (e.keyCode === 13) convert($("#src-task").val().indexOf("harmony") > -1 ? SYSTEM.HARMONY : SYSTEM.NEON);
+});
+</script>
+
+</body>
+</html>
