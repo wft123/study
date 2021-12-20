@@ -7,7 +7,8 @@
 <style>
 /*textarea {height: 600px; width: 400px}*/
 /*button {height: 50px; width: 80px; vertical-align: center;}*/
-div {width: 100%; text-align: center; margin: 5px; display: flex;}
+div.text {width: 100%; text-align: center; margin: 5px; display: flex;}
+div.btn {width: 100%; text-align: center;}
 textarea {height: 300px; width: 49%; resize: none; margin: 0 auto;}
 table {height: 100%; min-height: 50px; width: 49%; border: 1px solid black; margin: 0 auto; font-size: 12px; text-align: start;}
 tr {height: 25px;}
@@ -17,14 +18,15 @@ button {height: 40px; width: 80px; margin: 0 auto; padding:6px 10px 7px;border:1
 </head>
 <body>
 
-<div>
+<div class="text">
     <textarea id="src-task" placeholder="Task"></textarea>
     <textarea id="src-pr" placeholder="PR"></textarea>
 </div>
-<div>
+<div class="btn">   
     <button id="convert"> Convert </button>
+    <button id="expandBtn"> ... </button>
 </div>
-<div>
+<div class="text">
     <table id="res-task"></table>
     <table id="res-pr"></table>
 </div>
@@ -82,6 +84,18 @@ const convert = system => {
 }
 
 $("#convert").on("click", () => convert($("#src-task").val().indexOf("harmony") > -1 ? SYSTEM.HARMONY : SYSTEM.NEON));
+$("#expandBtn").on("click", () => {
+    let textarea = document.createElement('textarea');
+    textarea.value = 'document.querySelectorAll(".ellipsis-expander").forEach(v => v.click());';
+
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, 9999);  // 추가
+
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert("Script 복사 완료!");
+});
 $("table").on("dblclick", () => {
     window.getSelection().selectAllChildren(document.getElementById('res-task'));
     document.execCommand('Copy');
