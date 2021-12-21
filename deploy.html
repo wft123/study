@@ -37,7 +37,7 @@ const SYSTEM = {
     HARMONY : 1
 };
 const loopLine = (src, callback) => $(src).val().split("\n").forEach(callback);
-const cleaning = (value) => value.replace(":", "").replace("#", "").replace("l ", "").trim();
+const cleaning = (value) => value.replace(":", "").replace("#", "").replace(" l ", "").trim();
 const printResult = (list, target) => {
     $(target).empty();
     new Map([...list.entries()].sort()).forEach(v => $(target).append("<tr><td>"+ v +"</td></tr>") );
@@ -51,7 +51,7 @@ const convert = system => {
         case SYSTEM.NEON:
             loopLine("#src-task", (value) => {
                 value = value.split("\t")[1];
-                taskMap.set(value?.split(" ")[2].trim(), value?.split("l")[1].trim());
+                taskMap.set(value?.split(" ")[2].trim(), value?.split(" l ")[1].trim());
             });
             loopLine("#src-pr", (value) => {
                 if(value.startsWith("[")) prMap.set(value?.split(" ")[0].trim(), cleaning(value));
